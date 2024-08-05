@@ -55,7 +55,7 @@ for day in range(1, 2):
         num_rep = 1
         
         while repeat and num_rep < 4:        
-            print(f"Inference. Repetition number {num_rep}.")    
+            print(f"Inference for pid {pid} on day {day}. Repetition number {num_rep}.")    
             ddmdata_onesub = ddmdata[ddmdata['participant_id'] == pid]
             model_reg_v_angle_hier = hssm.HSSM(
                 data = ddmdata_onesub,
