@@ -34,9 +34,6 @@ import arviz as az
 hssm.set_floatX("float64")
 # numpyro.set_host_device_count(4)
 
-def log_transform(x):
-    return np.log(x + 1)
-
 '''
     Individual participants, all jokertypes
     With v ~ 1 + jokercondition
@@ -64,14 +61,14 @@ for day in range(2, 3):
     ddmdata.rename(columns={'subject': 'participant_id'}, inplace = True)
     ddmdata['min'] = ddmdata.apply(lambda row: min(abs(row['qdiff']), abs(row['repdiff'])), axis = 1)
     
-    for pid in range(6, 61):
+    for pid in range(20, 41):
         n_draws = 2_000
         n_tune = 2_000
         repeat = 1
         num_rep = 1
         
         while repeat and num_rep < 4:        
-            print(f"Inference for pid {pid} on day {day}. Repetition number {num_rep}.")    
+            print(f"\n\nInference for pid {pid} on day {day}. Repetition number {num_rep}.")    
             ddmdata_onesub = ddmdata[ddmdata['participant_id'] == pid]
             model_reg_v_angle_hier = hssm.HSSM(
                 data = ddmdata_onesub,

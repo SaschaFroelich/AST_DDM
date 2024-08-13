@@ -14,7 +14,7 @@ from jax import random
 import jax
 
 # Ensure JAX uses all available CPU cores
-jax.config.update('jax_platform_name', 'cpu')
+# jax.config.update('jax_platform_name', 'cpu')
 # jax.config.update('jax_platform_name', 'gpu')
 jax.config.update('jax_enable_x64', True)
 
@@ -77,7 +77,7 @@ for day in range(1, 2):
             include=[
                 {
                     "name": "v",
-                    "formula": "v ~ 1 + jokercondition + (0 + jokercondition|participant_id)",
+                    "formula": "v ~ 1 + jokercondition + (1 + jokercondition|participant_id)",
                     "prior": {
                         # "jokercondition": {"name": "Normal", 
                         #                       "mu": {"name": "Normal", "mu": 2., "sigma": 1.},
@@ -91,7 +91,7 @@ for day in range(1, 2):
                 },
                 {
                     "name": "z",
-                    "formula": "z ~ 1 + jokercondition + (0 + jokercondition|participant_id)",
+                    "formula": "z ~ 1 + jokercondition + (1 + jokercondition|participant_id)",
                     "prior": {
                         "Intercept": {
                             "name": "Uniform",
@@ -202,6 +202,7 @@ for day in range(1, 2):
                                                   'z_Intercept',
                                                   'z_jokercondition',
                                                   'z_jokercondition|participant_id_mu'])['r_hat']>R_thresh):
+            
             n_draws += 1000
             n_tune += 1000
             num_rep += 1
@@ -254,7 +255,7 @@ for day in range(1, 2):
             
             timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
             pickle.dump( summary, 
-                        open(f"DDMAngleNolapsesAlljokerswIntercept/Hierarchical_model_{timestamp}_Day{day}.p", "wb" ) )
+                        open(f"Hierarchical_model_{timestamp}_Day{day}.p", "wb" ) )
         
         print("== == == == ==")
 

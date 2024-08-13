@@ -159,7 +159,7 @@ def get_DDM_data2(day, RL = False):
     # filename = 'ddm_data_gefiltert_choiceonly.csv'
     # data = pd.read_csv(filename)
 
-    data = pd.read_csv('Data_DDM_2024-08-08 14:27:50.csv')
+    data = pd.read_csv('ddm_data.csv')
     data = data[data['trialsequence']>10]
     
     data['Qs']  = data[['Q1', 'Q2', 'Q3', 'Q4']].apply(lambda row: list(row), axis=1)
