@@ -38,15 +38,20 @@ hssm.set_floatX("float64")
     Individual participants, all jokertypes
     With v ~ 1 + jokercondition
     i.e., not hierarchically modelled
+    
+    jokerconditions
+    1 random
+    2 congruent
+    3 incongruent
 '''
 
 # ddmdata = ddmdata[ddmdata['jokercondition'] == 2]
 # time.sleep(36_000)
 
 R_thresh = 1.05
-with_lapses = False
+with_lapses = True
 
-for day in range(1, 2):
+for day in range(2, 3):
     
     ddmdata = DDMutils.get_DDM_data2(day)
     
@@ -60,18 +65,18 @@ for day in range(1, 2):
     
     ddmdata.rename(columns={'subject': 'participant_id'}, inplace = True)
     
-    for pid in [18, 20, 26, 31, 34, 36, 38, 41, 43, 45, 48, 49, 51, 58, 60]:
-        n_draws = 2_0
-        n_tune = 2_0
+    for pid in range(1, 61):
+        n_draws = 2_000
+        n_tune = 2_000
         repeat = 1
         num_rep = 1
         
-        while repeat and num_rep < 4:        
+        while repeat and num_rep < 5:        
             print(f"Inference for pid {pid} on day {day}. Repetition number {num_rep}.")    
             ddmdata_onesub = ddmdata[ddmdata['participant_id'] == pid]
 
             if with_lapses:
-                model_reg_v_angle = hssm.HSSM(
+                hssm_model = hssm.HSSM(
                     data = ddmdata_onesub,
                     model = "angle",
                     hierarchical = False,
@@ -117,7 +122,7 @@ for day in range(1, 2):
                 )
                 
             else:
-                model_reg_v_angle = hssm.HSSM(
+                hssm_model = hssm.HSSM(
                     data = ddmdata_onesub,
                     model = "angle",
                     hierarchical = False,
@@ -171,18 +176,18 @@ for day in range(1, 2):
                         }
                     ],
                 )
-                
-            infer_data_trace = model_reg_v_angle.sample(
+
+            infer_data_trace = hssm_model.sample(
                 sampler="nuts_numpyro", chains=4, cores=4, draws=n_draws, tune=n_tune,
                 include_mean = False
                 )
             
-            summary = model_reg_v_angle.summary()
+            summary = hssm_model.summary()
             print(summary)
             
             if np.any(summary['r_hat'] > R_thresh):
-                n_draws += 2000
-                n_tune += 2000
+                n_draws += 2500
+                n_tune += 2500
                 num_rep += 1
                 
                 if np.any(summary['r_hat'] <= R_thresh):
@@ -194,28 +199,31 @@ for day in range(1, 2):
                             initvalues[param] = summary.loc[param, 'mean']
 
                         elif 'v_jokercondition[' in param:
-                            index = int(param[-4])-1
+                            index = int(param[-4])-2
                             print(f"Setting {param} (index {index}).")
                             initvalues['v_jokercondition'][index] = summary.loc[param, 'mean']
 
                         elif 'z_jokercondition[' in param:
-                            index = int(param[-4])-1
+                            index = int(param[-4])-2
                             print(f"Setting {param} (index {index}).")
                             initvalues['z_jokercondition'][index] = summary.loc[param, 'mean']
+                            
+                        else:
+                            print(f"Not setting {param}.")
                 
-            else:
+            elif np.all(summary['r_hat'] <= R_thresh):
                 repeat = 0
             
                 print("Saving Results.")
                 timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
                 
                 if with_lapses:
-                    pickle.dump( model_reg_v_angle.summary(), 
-                                open(f"DDMAngleNolapsesAlljokerswInterceptwLapses/pid{pid}_{timestamp}_Day{day}.p", "wb" ) )
+                    pickle.dump( hssm_model.summary(), 
+                                open(f"DDMAngleNolapsesAlljokerswInterceptwLapses/pid{pid}_{timestamp}_Day{day}_ndraws{n_draws}.p", "wb" ) )
                     
                 else:
-                    pickle.dump( model_reg_v_angle.summary(), 
-                                open(f"DDMAngleNolapsesAlljokerswIntercept/pid{pid}_{timestamp}_Day{day}.p", "wb" ) )                    
+                    pickle.dump( hssm_model.summary(), 
+                                open(f"DDMAngleNolapsesAlljokerswIntercept/pid{pid}_{timestamp}_Day{day}_ndraws{n_draws}.p", "wb" ) )                    
             
             print("== == == == ==")
             
