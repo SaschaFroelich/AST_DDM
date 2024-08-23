@@ -193,35 +193,57 @@ def get_DDM_data2(day, RL = False):
     data['qdiff'] = data.apply(lambda row: return_qdiff(row), axis = 1)
     data['repdiff'] = data.apply(lambda row: return_repdiff(row), axis = 1)
     
-    #create distinct dataframes for day1 and 2
-    data_day1 = data[data['day'] == 1]
-    data_day2 = data[data['day'] == 2]
-    
     if day == 1:
-        ddmdata = pd.DataFrame(
-            np.column_stack([
-                data_day1["ag_idx"],
-                data_day1["RT"],
-                data_day1["response"],
-                data_day1['jokercondition'],
-                data_day1['qdiff'],
-                data_day1['repdiff']
-            ]),  # Make sure this closing bracket matches with np.column_stack opening
-            columns=["participant_id", "rt", "response", "jokercondition", "qdiff", "repdiff"]
-        )     
+        ddmdata = data[data['day'] == 1].loc[:, ['ag_idx',
+                                       'RT',
+                                       'response',
+                                       'jokercondition',
+                                       'qdiff',
+                                       'repdiff',
+                                       'trialidx']]
+        
+        # ddmdata = pd.DataFrame(
+        #     np.column_stack([
+        #         data_day1["ag_idx"],
+        #         data_day1["RT"],
+        #         data_day1["response"],
+        #         data_day1['jokercondition'],
+        #         data_day1['qdiff'],
+        #         data_day1['repdiff'],
+        #         data_day1['trialidx']
+        #     ]),  # Make sure this closing bracket matches with np.column_stack opening
+        #     columns=["participant_id", "rt", "response", "jokercondition", "qdiff", "repdiff", "trialidx"]
+        # )     
     
     elif day == 2:
-        ddmdata = pd.DataFrame(
-            np.column_stack([
-                data_day2["ag_idx"],
-                data_day2["RT"],
-                data_day2["response"],
-                data_day2['jokercondition'],
-                data_day2["qdiff"],
-                data_day2['repdiff']
-            ]),  # Make sure this closing bracket matches with np.column_stack opening
-            columns=["participant_id", "rt", "response", "jokercondition", "qdiff", "repdiff"]
-        )     
+        ddmdata = data[data['day'] == 2].loc[:, ['ag_idx',
+                                       'RT',
+                                       'response',
+                                       'jokercondition',
+                                       'qdiff',
+                                       'repdiff',
+                                       'trialidx']]
+        
+        
+    elif day == 3:
+        ddmdata = data.loc[:, ['ag_idx',
+                                'RT',
+                                'response',
+                                'jokercondition',
+                                'qdiff',
+                                'repdiff',
+                                'trialidx']]
+        
+    else:
+        raise Exception("Correct day not specified.")
+        
+        
+    ddmdata.rename(columns={'ag_idx': 'participant_id',
+                            'RT': 'rt'}, inplace = True)
+    
+    ddmdata['testcategorical'] = np.random.choice(['A', 'B', 'C'], 
+                                                  p=[0.6, 0.2, 0.2], 
+                                                  size = len(ddmdata), replace = True)
     
     print("Check that the data for the days are returned correctly!")
     return ddmdata
